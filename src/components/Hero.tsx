@@ -1,8 +1,31 @@
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import heroImage from "@/assets/hero-furia.jpg";
+// 1. Importar hooks e funções utilitárias
+import { useEffect, useState } from "react";
+import { fetchPagina } from "../utils/fetchPagina";
+import { parseContent } from "../utils/parseContent";
+
+// 2. Definir o tipo para o conteúdo
+type Conteudo = ReturnType<typeof parseContent>;
 
 const Hero = () => {
+  // 3. Criar o estado para armazenar o conteúdo
+  const [conteudo, setConteudo] = useState<Conteudo | null>(null);
+
+  // 4. Buscar os dados no WordPress ao carregar o componente
+  useEffect(() => {
+    fetchPagina("pagina-1") // Verifique se o slug no WP é "pagina-1"
+      .then(pagina => {
+        // Separa o HTML em categorias (títulos, parágrafos, etc)
+        const elementos = parseContent(pagina.content.rendered);
+        setConteudo(elementos);
+      })
+      .catch(() => {
+        console.warn("Não foi possível buscar o conteúdo do WordPress.");
+      });
+  }, []);
+
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden">
       <img
@@ -22,7 +45,8 @@ const Hero = () => {
           transition={{ duration: 0.6 }}
           className="inline-block rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 text-xs font-bold tracking-[0.3em] text-primary"
         >
-          FURIA · COUNTER-STRIKE
+          {/* Exemplo: Pegando a tag de cima do WordPress */}
+          {conteudo?.titulos[0]?.textContent || "FURIA · COUNTER-STRIKE"}
         </motion.span>
 
         <motion.h1
@@ -31,8 +55,11 @@ const Hero = () => {
           transition={{ duration: 0.8, delay: 0.15 }}
           className="mt-6 text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.95] text-glow"
         >
-          O Legado da{" "}
-          <span className="text-primary">Pantera</span>
+          {/* Substituindo o texto estático pelo título do WP */}
+          {conteudo?.titulos[1]?.textContent || "O Legado da "}
+          <span className="text-primary">
+            {conteudo?.titulos[2]?.textContent || "Pantera"}
+          </span>
         </motion.h1>
 
         <motion.p
@@ -41,8 +68,8 @@ const Hero = () => {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="mx-auto mt-6 max-w-2xl text-lg md:text-xl text-muted-foreground"
         >
-          Reviva as maiores conquistas, campanhas épicas e momentos marcantes
-          do time de CS da FURIA Esports.
+          {/* Substituindo o parágrafo estático pelo do WP */}
+          {conteudo?.paragrafos[0]?.textContent || "Reviva as maiores conquistas, campanhas épicas e momentos marcantes do time de CS da FURIA Esports."}
         </motion.p>
 
         <motion.div
@@ -67,7 +94,6 @@ const Hero = () => {
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
       <a
         href="#timeline"
         aria-label="Rolar para a timeline"
